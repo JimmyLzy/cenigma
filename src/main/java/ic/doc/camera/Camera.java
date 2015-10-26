@@ -1,17 +1,39 @@
 package ic.doc.camera;
 
-public class Camera {
+public class Camera implements WriteListener {
 
-    public void pressShutter() {
-        // not implemented
-    }
+	private boolean isOn = false;
+	private Sensor sensor;
+	private MemoryCard memoryCard;
+	private boolean dataCurrentlyBeingWritten = false;
 
-    public void powerOn() {
-        // not implemented
-    }
+	public Camera(Sensor sensor, MemoryCard memoryCard) {
+		this.sensor = sensor;
+		this.memoryCard = memoryCard;
+	}
 
-    public void powerOff() {
-       // not implemented
-    }
+	public void pressShutter() {
+		if (isOn) {
+			memoryCard.write(sensor.readData());
+			dataCurrentlyBeingWritten = true;
+		}
+	}
+
+	public void powerOn() {
+		isOn = true;
+		sensor.powerUp();
+	}
+
+	@Override
+	public void writeComplete() {
+		sensor.powerDown();
+		dataCurrentlyBeingWritten = false;
+	}
+
+	public void powerOff() {
+		if (!dataCurrentlyBeingWritten) {
+			isOn = false;
+			sensor.powerDown();
+		}
+	}
 }
-
